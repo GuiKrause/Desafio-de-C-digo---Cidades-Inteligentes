@@ -1,18 +1,3 @@
-const sistemaGerenciamento = {
-    usuarios: [
-        {
-            id: 1,
-            nome: 'Guilherme',
-            email: 'gui@gmail.com',
-            senha: '123',
-            listaPermissao: [],
-            dataCriacao: '20/12/2023',
-            dataUltimoLogin: '20/12/2023',
-            statusAtivacao: 'Ativo'
-        }
-    ]
-}
-
 // Cadastrar
 
 const cadastrarUsuario = (dados) => {
@@ -64,27 +49,46 @@ const deletarUsuario = (id) => {
     sistemaGerenciamento.usuarios = listaUsuariosAtualizada
 }
 
+// Sistema de gerenciamento
+
+const sistemaGerenciamento = {
+    permissoes: [cadastrarUsuario, listarUsuarios, atualizarUsuario, deletarUsuario],
+    usuarios: [
+        {
+            id: 1,
+            nome: 'admin',
+            email: 'admin@gmail.com',
+            senha: '12ABcd!@#',
+            listaPermissoes: [],
+            dataCriacao: '20/12/2023',
+            dataUltimoLogin: '20/12/2023',
+            statusAtivacao: []
+        }
+    ]
+}
+
+
 // Validar senha
 
 const validarSenha = (sen) => {
-    let senha = sen.split('')
-    const letrasMinusculas = 'abcdefghijklmnopqrstuvwxyz'.split('')
-    const letrasMaiusculas = 'ABCDEFGHIJKLMNOPQRSTUV'.split('')
-    const numeros = '0123456789'.split('')
+    const senha = sen.split('')
+    console.log(senha)
+    const letrasMinusculas = 'abcdefghijklmnopqrstuvwxyz'
+    const letrasMaiusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    const numeros = '0123456789'
     const caracteresEspeciais = letrasMinusculas.concat(letrasMaiusculas).concat(numeros)
-
-    let validacao = []
+    const validacao = []
 
     const senhaInclui = tipoCaractere => {
         for (let i = 0; i < senha.length; i++) {
             const caractere = senha[i];
-            console.log(caractere)
             if (tipoCaractere.includes(caractere)) {
                 validacao.push(true)
                 break
             }
         }
     }
+
     const senhaIncluiEspeciais = (tipoCaractere) => {
         for (let i = 0; i < senha.length; i++) {
             let caractere = senha[i];
@@ -95,38 +99,56 @@ const validarSenha = (sen) => {
         }
     }
 
-    letrasMinusculas.forEach(senhaInclui);
-    letrasMaiusculas.forEach(senhaInclui);
-    numeros.forEach(senhaInclui);
-    caracteresEspeciais.forEach(senhaIncluiEspeciais);
-
-    // console.log(minusculasValidas)
-    // console.log(maiusculasValidas)
-    // console.log(numerosValidos)
-    // console.log(especiaisValidos)
-
-    // console.log(caracteresValidos)
-
-    // let caracteresValidos
-
-    // if (minusculasValidas
-    //     && maiusculasValidas
-    //     && numerosValidos
-    //     && especiaisValidos) {
-    //     caracteresValidos = true
-    // } else {
-    //     caracteresValidos = false
-    // }
-
-
+    senhaInclui(letrasMinusculas)
+    senhaInclui(letrasMaiusculas)
+    senhaInclui(numeros)
+    senhaIncluiEspeciais(caracteresEspeciais)
+    console.log(validacao)
 
     if (sen.length > 8 && validacao.length === 4) {
-        console.log(validacao)
         return 'senha válida'
     } else {
-        console.log(validacao)
         return 'senha inválida'
     }
+}
+
+//Ativar e desativar usuário
+
+const ativarUsuario = (nome) => {
+    const indice = listarUsuarios().findIndex(usuario =>
+        usuario.nome === nome
+    )
+    const usuario = sistemaGerenciamento.usuarios[indice]
+    usuario.statusAtivacao = 'Ativo'
+}
+
+const desativarUsuario = (nome) => {
+    const indice = listarUsuarios().findIndex(usuario =>
+        usuario.nome === nome
+    )
+    const usuario = sistemaGerenciamento.usuarios[indice]
+    usuario.statusAtivacao = 'Inativo'
+}
+
+//Login e Logout
+
+const login = (nome, senha) => {
+    const listaUsuarios = sistemaGerenciamento.usuarios
+    const indice = listarUsuarios().findIndex(usuario =>
+        usuario.nome === nome
+    )
+    const nomeUsuario = listaUsuarios[indice].nome
+    const senhaUsuario = listaUsuarios[indice].senha
+
+    if (nomeUsuario === nome && senhaUsuario === senha) {
+        return 'Login realizado com sucesso'
+    } else {
+        return 'Verifique se o usuário ou a senha estão corretos '
+    }
+}
+
+const logout = () => {
+
 }
 
 //_____________
@@ -135,10 +157,10 @@ cadastrarUsuario({
     nome: 'Altenir',
     email: 'alt@gmail.com',
     senha: '246',
-    listaPermissao: [],
+    listaPermissao: sistemaGerenciamento.permissoes,
     dataCriacao: '20/12/2023',
     dataUltimoLogin: '20/12/2023',
-    statusAtivacao: 'Ativo'
+    statusAtivacao: ''
 })
 cadastrarUsuario({
     nome: 'Serjão dos Foguetes',
@@ -147,5 +169,5 @@ cadastrarUsuario({
     listaPermissao: [],
     dataCriacao: '20/12/2023',
     dataUltimoLogin: '20/12/2023',
-    statusAtivacao: 'Ativo'
+    statusAtivacao: ''
 })
