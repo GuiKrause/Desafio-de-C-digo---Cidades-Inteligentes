@@ -2,19 +2,27 @@ let usuarios = []
 
 class Usuario {
 
-    validarEmail = (emailTeste) => {
-        const validacaoEmail = /\S+@\S+\.\S+/;
-        let emailValido = true
-        validacaoEmail.test(emailTeste)
 
+    validarEmail = (emailTeste) => {
+        let emailValido = true
+        const validacaoEmail = /\S+@\S+\.\S+/;
+        if (validacaoEmail.test(emailTeste) !== true) {
+            emailValido = false
+        }
+        
+        return emailValido
+    }
+
+    validarEmailUnico = (emailTesteUnico) => {
+        let emailUnicoValido = true
         for (let i = 0; i < usuarios.length; i++) {
             const usuarioEmail = usuarios[i].email
-            if (emailTeste === usuarioEmail) {
-                emailValido = false
+            if (emailTesteUnico === usuarioEmail) {
+                emailUnicoValido = false
                 break
             }
         }
-        return emailValido
+        return emailUnicoValido
     }
 
     validarSenha = (sen) => {
@@ -23,8 +31,8 @@ class Usuario {
         const letrasMaiusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         const numeros = '0123456789'
         const caracteresEspeciais = letrasMinusculas.concat(letrasMaiusculas).concat(numeros)
-        let senhaValida
         const validacao = []
+        let senhaValida
 
         const senhaInclui = tipoCaractere => {
             for (let i = 0; i < senha.length; i++) {
@@ -59,7 +67,35 @@ class Usuario {
         return senhaValida
     }
 
-    constructor(nome, email, senha, permissoes) {
+    alterarStatusAtivacao = (dados) => {
+
+        const [email, status] = dados
+
+        if (this.statusLogin === true && this.statusAtividade === true) {
+
+            const emailValidado = this.validarEmail(email)
+
+            if (emailValidado === true) {
+                const indice = usuarios.findIndex(user =>
+                    user.email === email
+                )
+                if (email === this.email) {
+                    return 'Não é possível alterar seu prórpio status'
+                } else {
+                    const usuario = usuarios[indice]
+                    if (status === false) {
+                        usuario.statusAtividade = false
+                    } else if (status === true) {
+                        usuario.statusAtividade = true
+                    }
+                }
+            } else {
+                return 'O email inserido não é válido'
+            }
+        }
+    }
+
+    constructor(nome, email, senha, permissoes = []) {
         this.id = usuarios.length + 1
         this.nome = nome
         this.email = email
@@ -67,17 +103,18 @@ class Usuario {
         this.permissoes = permissoes
         this.dataCriacao = new Date()
         this.statusLogin = false
-        this.statusAtividade = false
+        this.statusAtividade = true
     }
 
     // Cadastrar
 
     cadastrarUsuario = (dados) => {
-        if (this.statusLogin === true) {
+        if (this.statusLogin === true && this.statusAtividade === true) {
 
             const emailValidado = this.validarEmail(dados[1])
+            const emailUnicoValidado = this.validarEmailUnico(dados[1])
             
-            if (emailValidado === true) {
+            if (emailValidado === true && emailUnicoValidado === true) {
                 const senhaValidada = this.validarSenha(dados[2])
                 if (senhaValidada === true) {
                     let usuario = new Usuario(
@@ -148,11 +185,10 @@ class Usuario {
     //Login e Logout
 
     logout = () => {
-        if (this.status === true) {
+        if (this.statusLogin === true) {
             this.statusLogin = false
         }
     }
-
 }
 
 
@@ -221,14 +257,14 @@ const validarEmail = (email) => {
 
 //Ativar e desativar usuário
 
-const alterarStatusAtivacao = (nome, status) => {
-    const indice = listarUsuarios().findIndex(usuario =>
-        usuario.nome === nome
+const alterarStatusAtivacao = (email, status) => {
+    const indice = usuarios.findIndex(usuario =>
+        usuario.email === email
     )
     const usuario = usuarios[indice]
-    if (status === 'Ativar') {
+    if (status === false) {
         usuario.statusAtividade = true
-    } else if (status === 'Desativar') {
+    } else if (status === true) {
         usuario.statusAtivacao = false
     }
 }
@@ -243,10 +279,10 @@ const alterarStatusAtivacao = (nome, status) => {
 let gui = new Usuario(
     'Guilherme',
     'gui@gmail.com',
-    'admin',
-    [],
+    'Admin123@',
+    [true]
 )
-
+    
 // cadastrarUsuario({
 //     nome: 'Guilherme',
 //     email: 'gui@gmail.com',
