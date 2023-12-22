@@ -204,7 +204,7 @@ class Usuario {
         }    
     }
 
-    atualizarUsuario = (email, novoNome, novoEmail, novaSenha, novasPermissoes = [cadastrar, listar, atualizar, deletar]) => {
+    atualizarUsuario = (email, novoNome, novoEmail, novaSenha, novasPermissoes = []) => {
         if (this.statusLogin === true && this.statusAtividade === true) {
 
             const [cadastrar, listar, atualizar, deletar] = novasPermissoes
