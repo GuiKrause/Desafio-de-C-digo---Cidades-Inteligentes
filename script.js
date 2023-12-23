@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'
+const bcrypt = require('bcrypt')
 
 let usuarios = []
 
@@ -8,13 +8,13 @@ class Usuario {
 
         const [cadastrar, listar, atualizar, deletar] = permissoes
 
-        cadastrar ? permissoes[0] = this.cadastrarUsuario : permissoes[0] = {Mensage: 'Você não tem permissão para cadastrar um novo usuário'}
-        listar ? permissoes[1] = this.listarUsuarios : permissoes[1] = {Mensage: 'Você não tem permissão para listar os usuários'}
-        atualizar ? permissoes[2] = this.atualizarUsuario : permissoes[2] = {Mensage: 'Você não tem permissão para atualizar os dados de um usuário'}
-        deletar ? permissoes[3] = this.deletarUsuario : permissoes[3] = {Mensage: 'Você não tem permissão para deletar um usuário'}
+        cadastrar ? permissoes[0] = this.cadastrarUsuario : permissoes[0] = { Mensage: 'Você não tem permissão para cadastrar um novo usuário' }
+        listar ? permissoes[1] = this.listarUsuarios : permissoes[1] = { Mensage: 'Você não tem permissão para listar os usuários' }
+        atualizar ? permissoes[2] = this.atualizarUsuario : permissoes[2] = { Mensage: 'Você não tem permissão para atualizar os dados de um usuário' }
+        deletar ? permissoes[3] = this.deletarUsuario : permissoes[3] = { Mensage: 'Você não tem permissão para deletar um usuário' }
 
         const salt = bcrypt.genSaltSync(10)
-        const senhaHash = bcrypt.hashSync(senha, salt)
+        const senhaHash = bcrypt.hashSync(senha, salt) // senha criptografada é inserida no construtor
 
         this.id = usuarios.length + 1
         this.nome = nome
@@ -31,7 +31,7 @@ class Usuario {
         const emailValidado = this.validarEmail(email)
         const emailUnicoValidado = this.validarEmailUnico(email)
 
-        if (emailValidado === true && emailUnicoValidado === true) {
+        if (emailValidado === true && emailUnicoValidado === true) { // valida se o email e a senha são válidos antes da criação
             const senhaValidada = this.validarSenha(senha)
             if (senhaValidada === true) {
 
@@ -51,7 +51,8 @@ class Usuario {
                     deletar: permissoes[3],
                 }
 
-                usuarios.push(usuario)
+                usuarios.push(usuario) // sempre que uma nova instância for criada, ocorre um push para dentro do array usuarios
+                // isso impede que um usuário seja criado e não esteja dentro do array
 
                 return usuario
             } else {
@@ -68,7 +69,7 @@ class Usuario {
         }
     }
 
-    validarEmail = (emailTeste) => {
+    validarEmail = (emailTeste) => { // Verifica se o email segue os padrões estabelecidos pelo regex
         let emailValido = true
         const validacaoEmail = /\S+@\S+\.\S+/;
         if (validacaoEmail.test(emailTeste) !== true) {
@@ -77,7 +78,7 @@ class Usuario {
         return emailValido
     }
 
-    validarEmailUnico = (emailTesteUnico) => {
+    validarEmailUnico = (emailTesteUnico) => { // Verifica se este emai é único dentro do array
         let emailUnicoValido = true
         for (let i = 0; i < usuarios.length; i++) {
             const usuarioEmail = usuarios[i].email
@@ -89,7 +90,7 @@ class Usuario {
         return emailUnicoValido
     }
 
-    validarSenha = (senhaTeste) => {
+    validarSenha = (senhaTeste) => { // Confere se a senha segue os parâmetros estabelecidos
         const senha = senhaTeste.split('')
         const letrasMinusculas = 'abcdefghijklmnopqrstuvwxyz'
         const letrasMaiusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -108,7 +109,7 @@ class Usuario {
             }
         }
 
-        const senhaIncluiEspeciais = (tipoCaractere) => {
+        const senhaIncluiEspeciais = (tipoCaractere) => { // É necessário que a verificação dos caracteres especiais seja feita isolada pois se negar a variável antes ela se torna false
             for (let i = 0; i < senha.length; i++) {
                 let caractere = senha[i];
                 if (!tipoCaractere.includes(caractere)) {
@@ -123,7 +124,7 @@ class Usuario {
         senhaInclui(numeros)
         senhaIncluiEspeciais(caracteresEspeciais)
 
-        if (senhaTeste.length > 8 && validacao.length === 4) {
+        if (senhaTeste.length >= 8 && validacao.length === 4) {
             senhaValida = true
         } else {
             senhaValida = false
@@ -133,7 +134,7 @@ class Usuario {
 
     alterarStatusAtivacao = (email, status) => {
 
-        if (this.statusLogin === true && this.statusAtividade === true) {
+        if (this.statusLogin === true && this.statusAtividade === true) { // É necessário verificar o status do login e da atividade antes de realizar qualquer função
 
             const emailValidado = this.validarEmail(email)
             const emailUnicoValidado = this.validarEmailUnico(email)
@@ -173,7 +174,7 @@ class Usuario {
             )
 
             return {
-                Mensage:'Usuário cadastrado com sucesso',
+                Mensage: 'Usuário cadastrado com sucesso',
                 usuario
             }
 
@@ -186,12 +187,12 @@ class Usuario {
 
     listarUsuarios = (email) => {
         if (this.statusLogin === true && this.statusAtividade === true) {
-            if (email === true) {
+            if (Boolean(email) === true) {
                 const indice = usuarios.findIndex(user =>
                     user.email === email
                 )
                 const usuario = usuarios[indice]
-                if(email === usuario.email){
+                if (email === usuario.email) {
                     return usuario
                 } else {
                     return {
@@ -201,7 +202,13 @@ class Usuario {
             } else {
                 return usuarios
             }
-        }    
+        } else {
+            return {
+                Mensage: 'Ocorreu um erro ao listar',
+                statusLogin: this.statusLogin,
+                statusAtividade: this.statusAtividade
+            }
+        }
     }
 
     atualizarUsuario = (email, novoNome, novoEmail, novaSenha, novasPermissoes = [cadastrar = null, listar = null, atualizar = null, deletar = null]) => {
@@ -209,10 +216,10 @@ class Usuario {
 
             const [cadastrar, listar, atualizar, deletar] = novasPermissoes
 
-            cadastrar ? novasPermissoes[0] = this.cadastrarUsuario : novasPermissoes[0] = {Mensage: 'Você não tem permissão para cadastrar um novo usuário'}
-            listar ? novasPermissoes[1] = this.listarUsuarios : novasPermissoes[1] = {Mensage: 'Você não tem permissão para listar os usuários'}
-            atualizar ? novasPermissoes[2] = this.atualizarUsuario : novasPermissoes[2] = {Mensage: 'Você não tem permissão para atualizar os dados de um usuário'}
-            deletar ? novasPermissoes[3] = this.deletarUsuario : novasPermissoes[3] = {Mensage: 'Você não tem permissão para deletar um usuário'}
+            cadastrar ? novasPermissoes[0] = this.cadastrarUsuario : novasPermissoes[0] = { Mensage: 'Você não tem permissão para cadastrar um novo usuário' }
+            listar ? novasPermissoes[1] = this.listarUsuarios : novasPermissoes[1] = { Mensage: 'Você não tem permissão para listar os usuários' }
+            atualizar ? novasPermissoes[2] = this.atualizarUsuario : novasPermissoes[2] = { Mensage: 'Você não tem permissão para atualizar os dados de um usuário' }
+            deletar ? novasPermissoes[3] = this.deletarUsuario : novasPermissoes[3] = { Mensage: 'Você não tem permissão para deletar um usuário' }
 
             const emailValidado = this.validarEmail(email)
 
@@ -273,7 +280,7 @@ class Usuario {
                             Mensage: 'Nenhum campo foi alterado'
                         }
                     }
-                    
+
                 } else {
                     return {
                         Mensage: 'Não existe usuário com este email',
@@ -299,11 +306,11 @@ class Usuario {
         if (this.statusLogin === true && this.statusAtividade === true) {
             if (email !== this.email) {
                 const emailValidado = this.validarEmail(email)
-    
+
                 if (emailValidado === true) {
-    
+
                     const emailExisteBaseDados = !this.validarEmailUnico(email)
-    
+
                     if (emailExisteBaseDados) {
                         let listaUsuariosAtualizada = usuarios.filter((usuarioAtual) => {
                             return usuarioAtual.email !== email;
@@ -333,7 +340,7 @@ class Usuario {
         }
     }
 
-    login = (email, senha) => {
+    login = (email, senha) => { // Como o email é único, utiliza-se o email e senha para realizar login
         if (this.statusLogin !== true) {
             if (this.statusAtividade === true) {
                 const comparacaoSenha = bcrypt.compareSync(senha, this.senha)
@@ -341,17 +348,17 @@ class Usuario {
                     this.dataUltimoLogin = new Date()
                     this.statusLogin = true
                     return {
-                        Mensage:'Login realizado com sucesso'
+                        Mensage: 'Login realizado com sucesso'
                     }
                 } else {
                     return {
-                        Mensage:'Verifique se o usuário ou a senha estão corretos',
+                        Mensage: 'Verifique se o usuário ou a senha estão corretos',
                         email: this.email,
                         senha: this.senha
                     }
                 }
             } else {
-                return{
+                return {
                     Mensage: 'Este usuário não está ativo',
                     statusAtividade: this.statusAtividade
                 }
@@ -378,16 +385,20 @@ class Usuario {
     }
 }
 
-let gui = new Usuario(
-    'Guilherme',
-    'gui@gmail.com',
-    'Admin123@',
-    [true, true, true, true]
-)
 
-console.log(gui.login('gui@gmail.com', 'Admin123@'))
-console.log(gui.cadastrar('Altenir', 'altenir@gmail.com', '123ABCd!@#', []))
-console.log(gui.atualizar('altenir@gmail.com', 'Adilson', 'adilson@gmail.com', '123ABCd!@%', [true]))
-console.log(gui.deletar('adilson@gmail.com'))
-console.log(gui.listar())
-console.log(gui.logout())
+// let admin = new Usuario(
+//     'Guilherme',
+//     'gui@gmail.com',
+//     'Admin123@',
+//     [true, true, true, true]
+// )
+
+// Rotina de gerenciamento de usuário
+    
+// admin.login('gui@gmail.com', 'Admin123@')
+// admin.cadastrar('Altenir', 'altenir@gmail.com', '123ABCd!@#', [null, true, null, null])
+// admin.atualizar('altenir@gmail.com', 'Adilson', 'adilson@gmail.com', '123ABCd!@%', [true])
+// admin.deletar('adilson@gmail.com')
+// console.log(admin.listar())
+
+module.exports = { Usuario, usuarios }
