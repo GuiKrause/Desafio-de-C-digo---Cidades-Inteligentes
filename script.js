@@ -204,7 +204,7 @@ class Usuario {
         }    
     }
 
-    atualizarUsuario = (email, novoNome, novoEmail, novaSenha, novasPermissoes = []) => {
+    atualizarUsuario = (email, novoNome, novoEmail, novaSenha, novasPermissoes = [cadastrar = null, listar = null, atualizar = null, deletar = null]) => {
         if (this.statusLogin === true && this.statusAtividade === true) {
 
             const [cadastrar, listar, atualizar, deletar] = novasPermissoes
@@ -226,19 +226,21 @@ class Usuario {
                     )
                     const usuario = usuarios[indice]
                     let camposAtualizados = []
-                    if (novoNome) {
+                    if (novoNome !== null) {
                         usuario.nome = novoNome
                         camposAtualizados.push(1)
                     }
-                    if (novoEmail) {
+                    if (novoEmail !== null) {
                         usuario.email = novoEmail
-                        camposAtualizados.push(1)
+                        camposAtualizados.push(2)
                     }
-                    if (novaSenha) {
+                    if (novaSenha !== null) {
                         const senhaValida = this.validarSenha(novaSenha)
                         if (senhaValida) {
-                            usuario.senha = novaSenha
-                            camposAtualizados.push(1)
+                            const salt = bcrypt.genSaltSync(10)
+                            const senhaHash = bcrypt.hashSync(novaSenha, salt)
+                            usuario.senha = senhaHash
+                            camposAtualizados.push(3)
                         } else {
                             return {
                                 Mensage: 'Esta senha não é válida',
@@ -246,24 +248,23 @@ class Usuario {
                             }
                         }
                     }
-                    if (novasPermissoes[0]) {
+                    if (cadastrar !== null) {
                         usuario.cadastrar = novasPermissoes[0]
-                        camposAtualizados.push(1)
+                        camposAtualizados.push(4)
                     }
-                    if (novasPermissoes[1]) {
+                    if (listar !== null) {
                         usuario.listar = novasPermissoes[1]
-                        camposAtualizados.push(1)
+                        camposAtualizados.push(5)
                     }
-                    if (novasPermissoes[2]) {
+                    if (atualizar !== null) {
                         usuario.atualizar = novasPermissoes[2]
-                        camposAtualizados.push(1)
+                        camposAtualizados.push(6)
                     }
-                    if (novasPermissoes[3]) {
+                    if (deletar !== null) {
                         usuario.deletar = novasPermissoes[3]
-                        camposAtualizados.push(1)
+                        camposAtualizados.push(7)
                     }
                     if (camposAtualizados.length > 0) {
-                        console.log(camposAtualizados)
                         return {
                             Mensage: 'O usuário foi atualizado com sucesso!'
                         }
@@ -308,6 +309,10 @@ class Usuario {
                             return usuarioAtual.email !== email;
                         })
                         usuarios = listaUsuariosAtualizada
+                        return {
+                            Mensage: 'Usuário deletado',
+                            usuarios
+                        }
                     } else {
                         return {
                             Mensage: 'Não existe usuário com este email',
@@ -335,7 +340,9 @@ class Usuario {
                 if (email === this.email && comparacaoSenha) {
                     this.dataUltimoLogin = new Date()
                     this.statusLogin = true
-                    return 'Login realizado com sucesso'
+                    return {
+                        Mensage:'Login realizado com sucesso'
+                    }
                 } else {
                     return {
                         Mensage:'Verifique se o usuário ou a senha estão corretos',
@@ -381,6 +388,6 @@ let gui = new Usuario(
 console.log(gui.login('gui@gmail.com', 'Admin123@'))
 console.log(gui.cadastrar('Altenir', 'altenir@gmail.com', '123ABCd!@#', []))
 console.log(gui.atualizar('altenir@gmail.com', 'Adilson', 'adilson@gmail.com', '123ABCd!@%', [true]))
-console.log(gui.atualizar('adilson@gmail.com'))
+console.log(gui.deletar('adilson@gmail.com'))
 console.log(gui.listar())
 console.log(gui.logout())
